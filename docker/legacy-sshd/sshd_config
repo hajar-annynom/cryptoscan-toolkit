@@ -1,0 +1,12 @@
+# Intentionally weak configuration — local test target only, never expose
+# this container's port outside the docker-compose network.
+Port 22
+HostKey /etc/ssh/ssh_host_rsa_key
+HostKey /etc/ssh/ssh_host_dsa_key
+HostKeyAlgorithms ssh-rsa,ssh-dss
+KexAlgorithms diffie-hellman-group1-sha1,diffie-hellman-group14-sha1
+Ciphers aes128-cbc,3des-cbc,arcfour
+MACs hmac-md5,hmac-sha1
+PermitRootLogin no
+PasswordAuthentication yes
+Subsystem sftp /usr/lib/openssh/sftp-server

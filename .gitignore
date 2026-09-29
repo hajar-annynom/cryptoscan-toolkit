@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.html
+*.pdf
+report.json
+.env
+dist/
+build/
+docker/certs/*.pem
+docker/certs/*.key

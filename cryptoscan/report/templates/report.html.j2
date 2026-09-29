@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CryptoScan-Toolkit Report — {{ result.scan_id }}</title>
+<style>
+  :root {
+    --info: #6b7280; --low: #2563eb; --medium: #d97706;
+    --high: #dc2626; --critical: #7c1d1d;
+  }
+  body { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+         margin: 2.5rem; color: #1f2937; background: #fff; }
+  h1 { font-size: 1.4rem; margin-bottom: 0.1rem; }
+  .meta { color: #6b7280; font-size: 0.85rem; margin-bottom: 1.5rem; }
+  .summary { display: flex; gap: 0.75rem; margin-bottom: 2rem; flex-wrap: wrap; }
+  .pill { border-radius: 999px; padding: 0.3rem 0.9rem; font-size: 0.8rem; font-weight: 600; color: #fff; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 2rem; }
+  th, td { text-align: left; padding: 0.55rem 0.7rem; border-bottom: 1px solid #e5e7eb; font-size: 0.88rem; vertical-align: top; }
+  th { background: #f9fafb; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.03em; color: #6b7280; }
+  .sev { display: inline-block; padding: 0.15rem 0.6rem; border-radius: 4px; color: #fff; font-size: 0.75rem; font-weight: 700; }
+  .sev-INFO { background: var(--info); } .sev-LOW { background: var(--low); }
+  .sev-MEDIUM { background: var(--medium); } .sev-HIGH { background: var(--high); }
+  .sev-CRITICAL { background: var(--critical); }
+  .remediation { color: #374151; font-style: italic; }
+  .errors { font-size: 0.85rem; color: #92400e; background: #fffbeb; border: 1px solid #fde68a;
+            border-radius: 6px; padding: 0.8rem 1rem; margin-bottom: 2rem; }
+  code { background: #f3f4f6; padding: 0.1rem 0.35rem; border-radius: 3px; font-size: 0.82em; }
+</style>
+</head>
+<body>
+  <h1>CryptoScan-Toolkit Report</h1>
+  <div class="meta">
+    Scan ID <code>{{ result.scan_id }}</code> ·
+    {{ result.targets|length }} target(s) ·
+    {{ "%.2f"|format(result.duration_seconds) }}s ·
+    generated {{ result.finished_at.strftime("%Y-%m-%d %H:%M:%S UTC") if result.finished_at else "in progress" }}
+  </div>
+
+  <div class="summary">
+    {% for name, count in result.summary().items() %}
+      {% if count > 0 %}
+      <span class="pill sev-{{ name }}">{{ name }}: {{ count }}</span>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  {% if result.errors %}
+  <div class="errors">
+    {{ result.errors|length }} target(s) could not be fully scanned (timeouts, refused connections, or handshake failures):
+    <ul>
+      {% for e in result.errors %}
+        <li><code>{{ e.target.address }}</code> — {{ e.module }}: {{ e.message }} ({{ e.exception_type }})</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <table>
+    <thead>
+      <tr><th>Severity</th><th>Target</th><th>Finding</th><th>Description</th><th>Remediation</th></tr>
+    </thead>
+    <tbody>
+      {% for v in result.by_severity() %}
+      <tr>
+        <td><span class="sev sev-{{ v.severity.name }}">{{ v.severity.name }}</span></td>
+        <td><code>{{ v.target.address }}</code></td>
+        <td><strong>{{ v.title }}</strong><br><small style="color:#9ca3af">{{ v.id }}</small></td>
+        <td>{{ v.description }}</td>
+        <td class="remediation">{{ v.remediation }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5">No findings above the reported severity threshold.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>

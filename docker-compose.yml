@@ -1,0 +1,31 @@
+# Spins up CryptoScan-Toolkit alongside deliberately misconfigured targets
+# (openssl s_server on legacy TLS, an old sshd image) so the scanner has
+# something realistic to demo against in a README GIF/screenshot without
+# ever touching a third-party host.
+services:
+  cryptoscan:
+    build: .
+    depends_on:
+      - legacy-tls-target
+      - legacy-ssh-target
+    networks: [scan-net]
+
+  legacy-tls-target:
+    image: alpine/openssl
+    command: >
+      s_server -accept 4433 -cert /certs/self-signed.pem -key /certs/self-signed.key
+      -tls1_1 -cipher "AES128-SHA:NULL-SHA:ADH-AES128-SHA:@SECLEVEL=0" -www
+    volumes:
+      - ./docker/certs:/certs
+    ports:
+      - "4433:4433"
+    networks: [scan-net]
+
+  legacy-ssh-target:
+    build: ./docker/legacy-sshd
+    ports:
+      - "2222:22"
+    networks: [scan-net]
+
+networks:
+  scan-net:
